@@ -16,24 +16,30 @@ public class Main {
         String inputFile2 = "mobydick.txt";
         String outputFile2 = "mdUpper.txt";
 
-        // Create a thread pool with 2 threads
         ExecutorService executor = Executors.newFixedThreadPool(2);
 
-        // Submit both tasks (they now run at the same time)
+        long totalStart = System.nanoTime();   // START total time
+
         executor.submit(() -> processFile(inputFile1, outputFile1));
         executor.submit(() -> processFile(inputFile2, outputFile2));
 
-        // Proper shutdown
         executor.shutdown();
 
         try {
-            // Wait for all tasks to finish
             if (!executor.awaitTermination(1, TimeUnit.MINUTES)) {
                 executor.shutdownNow();
             }
         } catch (InterruptedException e) {
             executor.shutdownNow();
         }
+
+        long totalEnd = System.nanoTime();     // END total time
+        long totalDuration = totalEnd - totalStart;
+
+        System.out.println("\n========== TOTAL TIME ==========");
+        System.out.println("Total time (ns): " + totalDuration);
+        System.out.println("Total time (ms): " + totalDuration / 1_000_000.0);
+        System.out.println("================================");
     }
 
     private static void processFile(String inputFile, String outputFile) {
@@ -43,19 +49,14 @@ public class Main {
         try {
             long start = System.nanoTime();
 
-            // read file
             String content = Files.readString(inputPath);
 
             long dummyCount = 0;
             for (int i = 0; i < content.length(); i++) {
-                char c = content.charAt(i);
-                dummyCount += c; // meaningless work to slow things down
+                dummyCount += content.charAt(i);
             }
 
-            // uppercase conversion
             String upper = content.toUpperCase();
-
-            // write file
             Files.writeString(outputPath, upper);
 
             long end = System.nanoTime();
