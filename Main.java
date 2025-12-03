@@ -2,6 +2,9 @@
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
 
@@ -13,8 +16,24 @@ public class Main {
         String inputFile2 = "mobydick.txt";
         String outputFile2 = "mdUpper.txt";
 
-        processFile(inputFile1, outputFile1);
-        processFile(inputFile2, outputFile2);
+        // Create a thread pool with 2 threads
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+
+        // Submit both tasks (they now run at the same time)
+        executor.submit(() -> processFile(inputFile1, outputFile1));
+        executor.submit(() -> processFile(inputFile2, outputFile2));
+
+        // Proper shutdown
+        executor.shutdown();
+
+        try {
+            // Wait for all tasks to finish
+            if (!executor.awaitTermination(1, TimeUnit.MINUTES)) {
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+        }
     }
 
     private static void processFile(String inputFile, String outputFile) {
